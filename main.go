@@ -19,6 +19,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
+	r.Use(delayMiddleware)
 
 	s := r.PathPrefix("/demo").Subrouter()
 	s.HandleFunc("/register", registerHandler)
