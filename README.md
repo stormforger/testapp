@@ -28,10 +28,9 @@ docker run --rm -e=PORT=9001 -p 9001:9001 stormforger/testapp
 
 * `/`: All other requests will be responded to as an echo server (replying with the seen request, including the body if it is below 10kb in size).
 
-
 ## Example
 
-```
+```terminal
 curl -d '{"hello": "world"}' \
   -H "Content-Type: application/json" \
   'http://testapp.loadtest.party/say/hello/?foo=bar'
@@ -43,4 +42,11 @@ Content-Type: application/json
 User-Agent: curl/7.54.0
 
 {"hello": "world"}
+```
+
+## Build & Release
+
+```terminal
+docker build . -t stormforger/testapp
+docker push stormforger/testapp
 ```
