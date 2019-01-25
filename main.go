@@ -79,11 +79,19 @@ func main() {
 	}
 }
 
-// FIXME: this will print a stack trace to the logs, but I don't know
-//        if there is another way to kill the request (and the connection)
-//        in a way that we do not respond
 func doNotRespondHandler(w http.ResponseWriter, r *http.Request) {
-	panic("do-not-respond")
+	hj, ok := w.(http.Hijacker)
+	if !ok {
+		http.Error(w, "webserver doesn't support hijacking", http.StatusInternalServerError)
+		return
+	}
+	conn, _, err := hj.Hijack()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	defer conn.Close()
 }
 
 func respondWithBytesHandler(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +107,7 @@ func respondWithBytesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 
 	data := make([]byte, size)
 	if _, err := rand.Read(data); err != nil {
