@@ -29,6 +29,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	if len(r.URL.Query()) == 0 {
 		w.Write(answerJSONSearchOK)
 	} else {
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write(answerJSONSearchFail)
 	}
 }
