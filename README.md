@@ -13,20 +13,18 @@ This repository contains the code we run for testing purposes on [testapp.loadte
 docker run --rm -e=PORT=9001 -p 9001:9001 stormforger/testapp
 ```
 
-* default PORT is 9000
+* you can configure the listen port via the `PORT` env variable
 
 ## Endpoints
 
 * `/demo`: Used for demos
-  * `/demo/register`: Has a 5% change to delay the JSON response by 250-350ms
-  * `/demo/search`: Will fail if query parameters are present (HTTP 400 response and different JSON response body)
+  * [`/demo/register`](http://testapp.loadtest.party/demo/register): Has a 5% change to delay the JSON response by 250-350ms
+  * [`/demo/search`](http://testapp.loadtest.party/demo/search): Will fail if query parameters are present (HTTP 400 response and different JSON response body)
+* [`/data`](http://testapp.loadtest.party/data): Collection of static responses in different formats (HTML, JSON, XML)
+* [`/respond-with/bytes?sizes=SIZE`](http://testapp.loadtest.party/respond-with/bytes?sizes=1024): Will respond with `SIZE` random bytes
+* [`/do-not-respond`](http://testapp.loadtest.party:9001/do-not-respond): Will read the request and then close the connection without sending any response
 
-* `/data`: Collection of static responses in different formats (HTML, JSON, XML)
-
-* `/respond-with/bytes?sizes=SIZE`: Will respond with `SIZE` random bytes
-* `/do-not-respond`: Will read the request and then close the connection without sending any response
-
-* `/`: All other requests will be responded to as an echo server (replying with the seen request, including the body if it is below 10kb in size).
+* [`/`](http://testapp.loadtest.party/): All other requests will be responded to as an echo server (replying with the seen request, including the body if it is below 10kb in size).
 
 ## Example
 
