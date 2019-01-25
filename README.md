@@ -5,7 +5,7 @@
 
 # StormForger Test App
 
-This repository contains the code we run for testing purposes on [http://testapp.loadtest.party](testapp.loadtest.party). The endpoint can also be reached via TLS.
+This repository contains the code we run for testing purposes on [testapp.loadtest.party](http://testapp.loadtest.party). The endpoint can also be reached via TLS.
 
 ## Usage
 
