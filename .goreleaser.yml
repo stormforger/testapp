@@ -1,0 +1,54 @@
+project_name: testapp
+
+release:
+  github:
+    owner: stormforger
+    name: testapp
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+- goos:
+  - linux
+  - darwin
+  - windows
+  goarch:
+  - amd64
+  - arm64
+
+archive:
+  format: zip
+  format_overrides:
+    - goos: linux
+      format: tar.gz
+
+brew:
+  github:
+    owner: stormforger
+    name: tap
+  install: bin.install "testapp"
+  folder: Formula
+  homepage: "https://stormforger.com"
+  description: "StormForger's very simple testapp"
+
+dockers:
+  - image_templates:
+    - 'stormforger/testapp:{{ .Tag }}'
+    - 'stormforger/testapp:latest'
+    extra_files:
+    - '.'
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
