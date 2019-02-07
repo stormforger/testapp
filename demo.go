@@ -37,17 +37,17 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 func init() {
 	var err error
 
-	answerJSONRegister, err = ioutil.ReadFile("data/register.json")
+	answerJSONRegister, err = ioutil.ReadFile("data/static/register.json")
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	answerJSONSearchOK, err = ioutil.ReadFile("data/search.json")
+	answerJSONSearchOK, err = ioutil.ReadFile("data/static/search.json")
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	answerJSONSearchFail, err = ioutil.ReadFile("data/error_bad_request.json")
+	answerJSONSearchFail, err = ioutil.ReadFile("data/static/error_bad_request.json")
 	if err != nil {
 		logrus.Fatal(err)
 	}
