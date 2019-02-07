@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"math/rand"
+	"crypto/tls"
+	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -15,11 +13,14 @@ import (
 )
 
 func main() {
-	var port string
+	port := "8080"
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
-	} else {
-		port = "9000"
+	}
+
+	portTLS := "8443"
+	if os.Getenv("TLS_PORT") != "" {
+		portTLS = os.Getenv("TLS_PORT")
 	}
 
 	shutdownCode := os.Getenv("SHUTDOWN_CODE")
@@ -27,17 +28,31 @@ func main() {
 		logrus.Warn("SHUTDOWN_CODE not configured!")
 	}
 
-	shutdownCh := make(chan bool)
+	serverCertificateFile := os.Getenv("TLS_CERT")
+	if serverCertificateFile == "" {
+		serverCertificateFile = "data/pki/server.cert.pem"
+	}
 
+	serverPrivateKeyFile := os.Getenv("TLS_KEY")
+	if serverPrivateKeyFile == "" {
+		serverPrivateKeyFile = "data/pki/server.key.pem"
+	}
+
+	shutdownCh := make(chan bool)
 	r := mux.NewRouter()
+
+	// global middlewares
+	// --------------------------------------------------------------------------
 	r.Use(delayMiddleware)
 
 	// demo router
+	// --------------------------------------------------------------------------
 	s := r.PathPrefix("/demo").Subrouter()
 	s.HandleFunc("/register", registerHandler)
 	s.HandleFunc("/search", searchHandler)
 
 	// command router
+	// --------------------------------------------------------------------------
 	x := r.PathPrefix("/cmd").Subrouter()
 	x.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
 		if shutdownCode != "" && r.URL.Query().Get("code") == shutdownCode {
@@ -48,70 +63,71 @@ func main() {
 		}
 	})
 
+	// X.509 and EST routes
+	// --------------------------------------------------------------------------
+	caCertPEMData, err := ioutil.ReadFile(serverCertificateFile)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	caPrivateKeyPEMData, err := ioutil.ReadFile(serverPrivateKeyFile)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	err = configureX509Handlers(r, caCertPEMData, caPrivateKeyPEMData)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
 	// static data
-	r.PathPrefix("/data/").Handler(http.StripPrefix("/data/", http.FileServer(http.Dir("data"))))
+	// --------------------------------------------------------------------------
+	r.PathPrefix("/data/").Handler(http.StripPrefix("/data/", http.FileServer(http.Dir("data/static"))))
 
 	// other handlers
+	// --------------------------------------------------------------------------
 	r.HandleFunc("/respond-with/bytes", respondWithBytesHandler)
 	r.HandleFunc("/do-not-respond", doNotRespondHandler)
 
 	// echo handler for everything else
+	// --------------------------------------------------------------------------
 	r.PathPrefix("/").HandlerFunc(echoHandler)
 
-	srv := &http.Server{
+	httpServer := &http.Server{
 		Handler:      r,
 		Addr:         ":" + port,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
-	logrus.Infof("Starting at :%s", port)
-
+	logrus.Infof("Starting HTTP server at :%s", port)
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
+		err := httpServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			logrus.Fatal(err)
 		}
 	}()
+
+	httpsServer := &http.Server{
+		Handler:      r,
+		Addr:         ":" + portTLS,
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			ClientAuth:         tls.RequestClientCert,
+		},
+	}
+
+	logrus.Infof("Starting HTTPS server at :%s", portTLS)
+	go func() {
+		err := httpsServer.ListenAndServeTLS(serverCertificateFile, serverPrivateKeyFile)
+		if err != nil && err != http.ErrServerClosed {
+			logrus.Fatal(err)
+		}
+	}()
+
 	select {
 	case <-shutdownCh:
-		srv.Shutdown(context.Background())
+		httpServer.Shutdown(context.Background())
 		logrus.Info("Shutting down on request")
 	}
-}
-
-func doNotRespondHandler(w http.ResponseWriter, r *http.Request) {
-	hj, ok := w.(http.Hijacker)
-	if !ok {
-		http.Error(w, "webserver doesn't support hijacking", http.StatusInternalServerError)
-		return
-	}
-	conn, _, err := hj.Hijack()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	defer conn.Close()
-}
-
-func respondWithBytesHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/octet-stream")
-
-	sizeParam := r.URL.Query().Get("size")
-	size := 0
-	if sizeParam != "" {
-		var err error
-		size, err = strconv.Atoi(sizeParam)
-		if err != nil {
-			size = 0
-		}
-	}
-
-	w.WriteHeader(http.StatusOK)
-
-	data := make([]byte, size)
-	if _, err := rand.Read(data); err != nil {
-		fmt.Fprintf(w, "Could not generate random response payload")
-	}
-	w.Write(data)
 }
