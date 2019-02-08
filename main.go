@@ -13,30 +13,15 @@ import (
 )
 
 func main() {
-	port := "8080"
-	if os.Getenv("PORT") != "" {
-		port = os.Getenv("PORT")
-	}
-
-	portTLS := "8443"
-	if os.Getenv("TLS_PORT") != "" {
-		portTLS = os.Getenv("TLS_PORT")
-	}
-
+	port := getEnv("PORT", "8080")
+	portTLS := getEnv("TLS_PORT", "8443")
 	shutdownCode := os.Getenv("SHUTDOWN_CODE")
 	if shutdownCode == "" {
 		logrus.Warn("SHUTDOWN_CODE not configured!")
 	}
 
-	serverCertificateFile := os.Getenv("TLS_CERT")
-	if serverCertificateFile == "" {
-		serverCertificateFile = "data/pki/server.cert.pem"
-	}
-
-	serverPrivateKeyFile := os.Getenv("TLS_KEY")
-	if serverPrivateKeyFile == "" {
-		serverPrivateKeyFile = "data/pki/server.key.pem"
-	}
+	serverCertificateFile := getEnv("TLS_CERT", "data/pki/server.cert.pem")
+	serverPrivateKeyFile := getEnv("TLS_KEY", "data/pki/server.key.pem")
 
 	shutdownCh := make(chan bool)
 	r := mux.NewRouter()
@@ -130,4 +115,11 @@ func main() {
 		httpServer.Shutdown(context.Background())
 		logrus.Info("Shutting down on request")
 	}
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
