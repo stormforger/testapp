@@ -21,8 +21,9 @@ import (
 )
 
 type tlsInspect struct {
-	Status  string `json:"status"`
-	Subject string `json:"subject"`
+	ServerName string `json:"server_name,omitempty"`
+	Status     string `json:"status,omitempty"`
+	Subject    string `json:"subject,omitempty"`
 }
 
 type x509Handlers struct {
@@ -45,13 +46,26 @@ func configureX509Handlers(router *mux.Router, caCertPEMData, caPrivateKeyPEMDat
 }
 
 func clientCertInspectHandler(w http.ResponseWriter, r *http.Request) {
+	if r.TLS == nil {
+		http.Error(w, "No TLS connection", http.StatusBadRequest)
+		return
+	}
 	certs := r.TLS.PeerCertificates
 
-	tlsInspection := &tlsInspect{}
+	tlsInspection := &tlsInspect{
+		ServerName: r.TLS.ServerName,
+	}
 
 	if len(certs) == 0 {
 		tlsInspection.Status = "no_cert"
-		fmt.Fprintf(w, "No TLS Client certificate provided\n")
+
+		res, err := json.Marshal(tlsInspection)
+		if err != nil {
+			http.Error(w, "Cannot marshal TLS information.", http.StatusInternalServerError)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(res)
 
 		return
 	}
@@ -65,7 +79,7 @@ func clientCertInspectHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cannot marshal TLS information.", http.StatusInternalServerError)
 	}
 
-	logrus.Infof("Hello %s\n", cert.Subject)
+	logrus.Infof("Hello %s from %s\n", cert.Subject, r.RemoteAddr)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
