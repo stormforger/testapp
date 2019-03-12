@@ -23,6 +23,8 @@ func main() {
 	serverCertificateFile := getEnv("TLS_CERT", "data/pki/server.cert.pem")
 	serverPrivateKeyFile := getEnv("TLS_KEY", "data/pki/server.key.pem")
 
+	tlsConnectionInspection := getEnv("TLS_DEBUG", "0")
+
 	shutdownCh := make(chan bool)
 	r := mux.NewRouter()
 
@@ -100,6 +102,10 @@ func main() {
 			InsecureSkipVerify: true,
 			ClientAuth:         tls.RequestClientCert,
 		},
+	}
+
+	if tlsConnectionInspection == "1" {
+		setupTLSConnectionInspection(httpsServer)
 	}
 
 	logrus.Infof("Starting HTTPS server at :%s", portTLS)
