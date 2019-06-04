@@ -5,7 +5,8 @@
     },
     "list": [{
         "id": 1,
-        "item": "1%"
+        "item": "1%",
+        "state": true
       },
       {
         "id": 2,
@@ -17,11 +18,20 @@
       },
       {
         "id": 4,
-        "item": "4%"
+        "item": "4%",
+        "state": false
+      },
+      {
+        "id": 1,
+        "state": false
       }
     ],
     "flat_list": [
       "1%", "2%", "3%", "4%"
-    ]
+    ],
+    "boolean_list": [
+      true, false
+    ],
+    "boolean": true
   }
 }
