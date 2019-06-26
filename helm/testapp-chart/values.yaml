@@ -1,0 +1,29 @@
+managed-by: giantswarm
+
+replicaCount: 1
+
+image:
+  repository: stormforger/testapp
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 9000
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  paths:
+    - "/"
+  hosts:
+    - testapp.ss863.k8s.ginger.eu-central-1.aws.gigantic.io
+
+resources:
+  limits:
+   cpu: 100m
+   memory: 256Mi
+  requests:
+   cpu: 100m
+   memory: 256Mi
