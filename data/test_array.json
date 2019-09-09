@@ -1,0 +1,4 @@
+[
+  { "id": 1, "type": "a", "valid": true },
+  { "id": 2, "type": "b", "valid": false }
+]

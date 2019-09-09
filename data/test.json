@@ -6,15 +6,18 @@
     "list": [{
         "id": 1,
         "item": "1%",
-        "state": true
+        "state": true,
+        "type": "aa"
       },
       {
         "id": 2,
-        "item": "2%"
+        "item": "2%",
+        "type": "aa"
       },
       {
         "id": 3,
-        "item": "3%"
+        "item": "3%",
+        "type": "bb"
       },
       {
         "id": 4,
