@@ -8,7 +8,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0 // indirect
 	golang.org/x/arch v0.0.0-20190909030613-46d78d1859ac // indirect
-	golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b // indirect
+	golang.org/x/crypto v0.0.0-20190909091759-094676da4a83 // indirect
 )
 
 go 1.13
