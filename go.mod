@@ -11,3 +11,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b // indirect
 	golang.org/x/sys v0.0.0-20190123074212-c6b37f3e9285 // indirect
 )
+
+go 1.13
