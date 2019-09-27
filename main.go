@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -31,6 +32,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.Use(delayMiddleware)
+	r.Use(handlers.CompressHandler)
 
 	// demo router
 	s := r.PathPrefix("/demo").Subrouter()
