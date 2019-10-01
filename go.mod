@@ -1,7 +1,7 @@
 module github.com/stormforger/testapp
 
 require (
-	github.com/google/pprof v0.0.0-20190908185732-236ed259b199 // indirect
+	github.com/google/pprof v0.0.0-20190930153522-6ce02741cba3 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3
