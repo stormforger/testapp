@@ -22,7 +22,6 @@ FROM alpine
 
 COPY --from=builder /etc/passwd /etc/passwd
 
-COPY --from=builder /testapp /testapp
 COPY data/ /data
 
 EXPOSE 9000
@@ -30,3 +29,5 @@ EXPOSE 9000
 USER testapp
 
 ENTRYPOINT ["/testapp"]
+
+COPY --from=builder /testapp /testapp
