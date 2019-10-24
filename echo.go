@@ -22,6 +22,11 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	location := r.URL.Query().Get("location")
+	if location != "" {
+		w.Header().Add("location", location)
+	}
+
 	if r.ContentLength > 10000 {
 		reqDump, err := httputil.DumpRequest(r, false)
 		if err != nil {
