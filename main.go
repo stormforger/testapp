@@ -37,6 +37,7 @@ func main() {
 	// demo router
 	s := r.PathPrefix("/demo").Subrouter()
 	s.HandleFunc("/register", registerHandler)
+	s.HandleFunc("/login", registerHandler)
 	s.HandleFunc("/search", searchHandler)
 
 	// command router
