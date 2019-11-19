@@ -20,9 +20,9 @@ jobs:
       run: |
         go get -v -t -d ./...
 
-    - name: Build
+    - name: go build
       run: go build -v .
 
-    - name: Build
+    - name: go test
       run: go test ./...
 
