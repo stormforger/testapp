@@ -47,7 +47,7 @@ User-Agent: curl/7.54.0
 {"hello": "world"}
 ```
 
-# X.509 & EST Endpoints
+# X.509 & EST Endpoints (Enrollement over Secure Transport)
 
 **NOTE** that the certificate material used by testapp is for testing purposes only!
 
@@ -70,8 +70,15 @@ You can generate a new private key and a CSR using `openssl` and `base64` (as RF
 ```terminal
 openssl req -new -newkey rsa:2048 -nodes -out tmp/client.csr.der -outform DER -keyout tmp/client.key.pem -subj "/CN=hello-world"
 base64 tmp/client.csr.der > tmp/client.csr.b64
-curl -k -X POST --data-binary @tmp/client.csr.b64 -o tmp/cert.p7.base64 https://testapp.loadtest.party/.well-known/est/simpleenroll
-cat tmp/cert.p7.base64 | base64 -D | openssl x509 -inform DER -text
+curl -k -X POST --data-binary @tmp/client.csr.b64 -o tmp/cert.p7.base64 -k https://localhost:8443/.well-known/est/simpleenroll
+cat tmp/cert.p7.base64 | base64 -D | openssl x509 -inform DER > tmp/client.crt.pem
+```
+
+Alternatively you can use the `client/main.go` tool to generate the CSR + private key file.
+
+Usage:
+```
+curl --cert ./tmp/client.crt.pem --key ./tmp/client.key.pem -k https://localhost:8443/x509/inspect
 ```
 
 ## Build & Release
