@@ -58,30 +58,24 @@ func clientCertInspectHandler(w http.ResponseWriter, r *http.Request) {
 	if len(certs) == 0 {
 		tlsInspection.Status = "no_cert"
 
-		res, err := json.Marshal(tlsInspection)
-		if err != nil {
-			http.Error(w, "Cannot marshal TLS information.", http.StatusInternalServerError)
-		}
+		logrus.Warn("x509inspect: No cert request from %s\n", r.RemoteAddr)
+	} else {
+		cert := certs[0]
+		tlsInspection.Subject = cert.Subject.String()
+		tlsInspection.Status = "client_cert"
 
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(res)
-
-		return
+		logrus.Infof("x509inspect: Hello %s from %s\n", cert.Subject, r.RemoteAddr)
 	}
-
-	cert := certs[0]
-
-	tlsInspection.Subject = cert.Subject.String()
-	tlsInspection.Status = "client_cert"
-	res, err := json.Marshal(tlsInspection)
-	if err != nil {
-		http.Error(w, "Cannot marshal TLS information.", http.StatusInternalServerError)
-	}
-
-	logrus.Infof("Hello %s from %s\n", cert.Subject, r.RemoteAddr)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(res)
+
+	e := json.NewEncoder(w)
+	e.SetIndent("", "  ")
+	err := e.Encode(tlsInspection)
+	if err != nil {
+		http.Error(w, "Cannot marshal TLS information.", http.StatusInternalServerError)
+		logrus.Error("json marshal: %v", err)
+	}
 }
 
 func (x *x509Handlers) estEnrollHandler(w http.ResponseWriter, r *http.Request) {
