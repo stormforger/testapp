@@ -1,6 +1,7 @@
 module github.com/stormforger/testapp
 
 require (
+	github.com/fullsailor/pkcs7 v0.0.0-20180613152042-8306686428a5
 	github.com/google/pprof v0.0.0-20190930153522-6ce02741cba3 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/handlers v1.4.2

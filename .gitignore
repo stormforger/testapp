@@ -1,5 +1,11 @@
 # binary
 testapp
+pki-tool
 
 # release artifacts
 dist/*
+
+# tmp files and sandbox
+tmp/
+sandbox/
+data/pki/*.pem

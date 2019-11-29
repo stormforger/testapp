@@ -5,20 +5,33 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
-func RegisterTestAppRoutes(r *mux.Router) {
+func RegisterTestAppRoutes(r *mux.Router, serverCertificateFile, serverPrivateKeyFile string) {
 	r.Use(DelayMiddleware)
 	r.Use(handlers.CompressHandler)
 
-	// demo router
+	// X.509 and EST routes
+	// --------------------------------------------------------------------------
+	if serverCertificateFile != "" && serverPrivateKeyFile != "" {
+		err := RegisterX509ESTHandlers(r, serverCertificateFile, serverPrivateKeyFile)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+	} else {
+		logrus.Warn("RegisterTestAppRoutes: empty tls certificate")
+	}
+
 	s := r.PathPrefix("/demo").Subrouter()
 	RegisterDemo(s)
 
-	// static data
-	r.PathPrefix("/data/").Handler(http.StripPrefix("/data/", http.FileServer(http.Dir("data"))))
+	r.PathPrefix("/data/").Handler(http.StripPrefix("/data/", http.FileServer(http.Dir("data/static"))))
 
-	// other handlers
+	RegisterStaticHandler(r)
+}
+
+func RegisterStaticHandler(r *mux.Router) {
 	r.HandleFunc("/respond-with/bytes", RespondWithBytesHandler)
 	r.HandleFunc("/do-not-respond", DoNotRespondHandler)
 

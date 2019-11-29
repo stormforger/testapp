@@ -14,17 +14,17 @@ func RegisterDemo(s *mux.Router) {
 	var err error
 	var server DemoServer
 
-	server.answerJSONRegister, err = ioutil.ReadFile("data/register.json")
+	server.answerJSONRegister, err = ioutil.ReadFile("data/static/register.json")
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	server.answerJSONSearchOK, err = ioutil.ReadFile("data/search.json")
+	server.answerJSONSearchOK, err = ioutil.ReadFile("data/static/search.json")
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	server.answerJSONSearchFail, err = ioutil.ReadFile("data/error_bad_request.json")
+	server.answerJSONSearchFail, err = ioutil.ReadFile("data/static/error_bad_request.json")
 	if err != nil {
 		logrus.Fatal(err)
 	}

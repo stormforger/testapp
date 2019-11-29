@@ -10,10 +10,10 @@ This repository contains the code we run for testing purposes on [testapp.loadte
 ## Usage
 
 ```console
-docker run --rm -e=PORT=9001 -p 9001:9001 stormforger/testapp
+docker run --rm -p 8080:8080 -p 8443:8443 stormforger/testapp
 ```
 
-* you can configure the listen port via the `PORT` env variable
+* you can configure the listen port via the `PORT` and `TLS_PORT` env variables
 
 ## Endpoints
 
@@ -31,7 +31,6 @@ docker run --rm -e=PORT=9001 -p 9001:9001 stormforger/testapp
 * delay: All routes support a generic `delay` query parameter which specifies the number of milliseconds that the request should be artificially hold before processing
 * compress: The gorillatoolkit compression handlers supports gzip encoding responses, if the correct http headers are specified
 
-
 ## Example
 
 ```terminal
@@ -48,9 +47,51 @@ User-Agent: curl/7.54.0
 {"hello": "world"}
 ```
 
+# X.509 & EST Endpoints (Enrollement over Secure Transport)
+
+**NOTE** that the certificate material used by testapp is for testing purposes only!
+
+* `/x509/inspect`: Can be used with a Client TLS certificate. The response will be JSON, containing the subject. All client certificates will be accepted.
+
+[EST/RFC7030](https://tools.ietf.org/html/rfc7030) Endpoints:
+
+* `/.well-known/est/cacerts`: Will return the current CA certificates in use. Note that this is a just a test certificate. See [RFC7030 4.1](https://tools.ietf.org/html/rfc7030#section-4.1) for details.
+
+You can use OpenSSL to convert the response into PEM:
+
+```terminal
+curl https://testapp.loadtest.party/.well-known/est/cacerts | base64 -D | openssl pkcs7 -inform DER -print_certs
+```
+
+* `/.well-known/est/simpleenroll`: If you POST a base64 encoded PKCS10 to this endpoint, you will get a base64 encoded PKCS7 response. In contrast to RFC7030 no authentication is required.
+
+You can generate a new private key and a CSR using `openssl` and `base64` (as RFC7030 requires base64 encoded PKCS10):
+
+```terminal
+openssl req -new -newkey rsa:2048 -nodes -out tmp/client.csr.der -outform DER -keyout tmp/client.key.pem -subj "/CN=hello-world"
+base64 tmp/client.csr.der > tmp/client.csr.b64
+curl -k -X POST --data-binary @tmp/client.csr.b64 -o tmp/cert.p7.base64 -k https://localhost:8443/.well-known/est/simpleenroll
+cat tmp/cert.p7.base64 | base64 -D | openssl x509 -inform DER > tmp/client.crt.pem
+```
+
+Alternatively you can use the `client/main.go` tool to generate the CSR + private key file.
+
+Usage:
+```
+curl --cert ./tmp/client.crt.pem --key ./tmp/client.key.pem -k https://localhost:8443/x509/inspect
+```
+
 ## Build & Release
 
 ```terminal
 docker build . -t stormforger/testapp
 docker push stormforger/testapp
+```
+
+### Generate Server RSA Key and Certificate
+
+```terminalß
+go run $(go env GOROOT)/src/crypto/tls/generate_cert.go --host localhost
+mv cert.pem data/pki/server.cert.pem
+mv key.pem data/pki/server.key.pem
 ```
