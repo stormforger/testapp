@@ -32,7 +32,16 @@ type x509Handlers struct {
 	CAPrivateKey         interface{}
 }
 
-func RegisterX509Handlers(router *mux.Router, caCertPEMData, caPrivateKeyPEMData []byte) error {
+func RegisterX509ESTHandlers(router *mux.Router, serverCertificateFile, serverPrivateKeyFile string) error {
+	caCertPEMData, err := ioutil.ReadFile(serverCertificateFile)
+	if err != nil {
+		return err
+	}
+	caPrivateKeyPEMData, err := ioutil.ReadFile(serverPrivateKeyFile)
+	if err != nil {
+		return err
+	}
+
 	x, err := buildX509Handlers(caCertPEMData, caPrivateKeyPEMData)
 	if err != nil {
 		return err
@@ -58,13 +67,13 @@ func clientCertInspectHandler(w http.ResponseWriter, r *http.Request) {
 	if len(certs) == 0 {
 		tlsInspection.Status = "no_cert"
 
-		logrus.Warn("x509inspect: No cert request from %s\n", r.RemoteAddr)
+		logrus.Warnf("x509inspect: No cert request from %v\n", r.RemoteAddr)
 	} else {
 		cert := certs[0]
 		tlsInspection.Subject = cert.Subject.String()
 		tlsInspection.Status = "client_cert"
 
-		logrus.Infof("x509inspect: Hello %s from %s\n", cert.Subject, r.RemoteAddr)
+		logrus.Infof("x509inspect: Hello %s from %v\n", cert.Subject, r.RemoteAddr)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -74,7 +83,7 @@ func clientCertInspectHandler(w http.ResponseWriter, r *http.Request) {
 	err := e.Encode(tlsInspection)
 	if err != nil {
 		http.Error(w, "Cannot marshal TLS information.", http.StatusInternalServerError)
-		logrus.Error("json marshal: %v", err)
+		logrus.Errorf("json marshal: %v", err)
 	}
 }
 
