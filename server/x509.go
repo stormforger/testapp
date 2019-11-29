@@ -1,9 +1,8 @@
-package main
+package server
 
 import (
 	"bytes"
 	"crypto/rand"
-	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
@@ -30,10 +29,10 @@ type x509Handlers struct {
 	CACertPEMData        []byte
 	CACertPKCS7DERBase64 []byte
 	CACert               *x509.Certificate
-	CAPrivateKey         *rsa.PrivateKey
+	CAPrivateKey         interface{}
 }
 
-func configureX509Handlers(router *mux.Router, caCertPEMData, caPrivateKeyPEMData []byte) error {
+func RegisterX509Handlers(router *mux.Router, caCertPEMData, caPrivateKeyPEMData []byte) error {
 	x, err := buildX509Handlers(caCertPEMData, caPrivateKeyPEMData)
 	if err != nil {
 		return err
@@ -186,9 +185,9 @@ func buildX509Handlers(caCertPEMData, caPrivateKeyFile []byte) (x509Handlers, er
 		return x509Handlers{}, fmt.Errorf("pem.Decode failed")
 	}
 
-	caPrivateKey, err := x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
+	caPrivateKey, err := x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
 	if err != nil {
-		return x509Handlers{}, err
+		return x509Handlers{}, fmt.Errorf("private key: %v", err)
 	}
 
 	return x509Handlers{

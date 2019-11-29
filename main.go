@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"github.com/stormforger/testapp/server"
 )
 
 func main() {
@@ -26,20 +27,11 @@ func main() {
 	tlsConnectionInspection := getEnv("TLS_DEBUG", "0")
 
 	shutdownCh := make(chan bool)
+
 	r := mux.NewRouter()
+	server.RegisterTestAppRoutes(r)
 
-	// global middlewares
-	// --------------------------------------------------------------------------
-	r.Use(delayMiddleware)
-
-	// demo router
-	// --------------------------------------------------------------------------
-	s := r.PathPrefix("/demo").Subrouter()
-	s.HandleFunc("/register", registerHandler)
-	s.HandleFunc("/search", searchHandler)
-
-	// command router
-	// --------------------------------------------------------------------------
+	// Also install our command routes
 	x := r.PathPrefix("/cmd").Subrouter()
 	x.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
 		if shutdownCode != "" && r.URL.Query().Get("code") == shutdownCode {
@@ -60,23 +52,10 @@ func main() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	err = configureX509Handlers(r, caCertPEMData, caPrivateKeyPEMData)
+	err = server.RegisterX509Handlers(r, caCertPEMData, caPrivateKeyPEMData)
 	if err != nil {
 		logrus.Fatal(err)
 	}
-
-	// static data
-	// --------------------------------------------------------------------------
-	r.PathPrefix("/data/").Handler(http.StripPrefix("/data/", http.FileServer(http.Dir("data/static"))))
-
-	// other handlers
-	// --------------------------------------------------------------------------
-	r.HandleFunc("/respond-with/bytes", respondWithBytesHandler)
-	r.HandleFunc("/do-not-respond", doNotRespondHandler)
-
-	// echo handler for everything else
-	// --------------------------------------------------------------------------
-	r.PathPrefix("/").HandlerFunc(echoHandler)
 
 	httpServer := &http.Server{
 		Handler:      r,
@@ -118,8 +97,9 @@ func main() {
 
 	select {
 	case <-shutdownCh:
-		httpServer.Shutdown(context.Background())
 		logrus.Info("Shutting down on request")
+		httpServer.Shutdown(context.Background())
+		httpsServer.Shutdown(context.Background())
 	}
 }
 

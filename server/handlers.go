@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -7,7 +7,22 @@ import (
 	"strconv"
 )
 
-func respondWithBytesHandler(w http.ResponseWriter, r *http.Request) {
+func DoNotRespondHandler(w http.ResponseWriter, r *http.Request) {
+	hj, ok := w.(http.Hijacker)
+	if !ok {
+		http.Error(w, "webserver doesn't support hijacking", http.StatusInternalServerError)
+		return
+	}
+	conn, _, err := hj.Hijack()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	defer conn.Close()
+}
+
+func RespondWithBytesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 
 	sizeParam := r.URL.Query().Get("size")
@@ -27,19 +42,4 @@ func respondWithBytesHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Could not generate random response payload")
 	}
 	w.Write(data)
-}
-
-func doNotRespondHandler(w http.ResponseWriter, r *http.Request) {
-	hj, ok := w.(http.Hijacker)
-	if !ok {
-		http.Error(w, "webserver doesn't support hijacking", http.StatusInternalServerError)
-		return
-	}
-	conn, _, err := hj.Hijack()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	defer conn.Close()
 }

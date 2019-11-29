@@ -8,3 +8,4 @@ dist/*
 # tmp files and sandbox
 tmp/
 sandbox/
+data/pki/*.pem

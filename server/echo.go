@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -7,8 +7,15 @@ import (
 	"strconv"
 )
 
-func echoHandler(w http.ResponseWriter, r *http.Request) {
+// EchoHandler is a simple http.Handler for debugging webrequest.
+// Each request is sent back to the client as the payload.
+func EchoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
+
+	location := r.URL.Query().Get("location")
+	if location != "" {
+		w.Header().Add("location", location)
+	}
 
 	answerStatus := r.URL.Query().Get("status")
 	if answerStatus != "" {

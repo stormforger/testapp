@@ -5,23 +5,36 @@
     },
     "list": [{
         "id": 1,
-        "item": "1%"
+        "item": "1%",
+        "state": true,
+        "type": "aa"
       },
       {
         "id": 2,
-        "item": "2%"
+        "item": "2%",
+        "type": "aa"
       },
       {
         "id": 3,
-        "item": "3%"
+        "item": "3%",
+        "type": "bb"
       },
       {
         "id": 4,
-        "item": "4%"
+        "item": "4%",
+        "state": false
+      },
+      {
+        "id": 1,
+        "state": false
       }
     ],
     "flat_list": [
       "1%", "2%", "3%", "4%"
-    ]
+    ],
+    "boolean_list": [
+      true, false
+    ],
+    "boolean": true
   }
 }

@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func delayMiddleware(next http.Handler) http.Handler {
+func DelayMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		delay := r.URL.Query().Get("delay")
