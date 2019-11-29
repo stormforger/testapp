@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -29,9 +28,7 @@ func main() {
 	shutdownCh := make(chan bool)
 
 	r := mux.NewRouter()
-	server.RegisterTestAppRoutes(r)
-
-	// Also install our command routes
+	// Install our command routes
 	x := r.PathPrefix("/cmd").Subrouter()
 	x.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
 		if shutdownCode != "" && r.URL.Query().Get("code") == shutdownCode {
@@ -42,20 +39,8 @@ func main() {
 		}
 	})
 
-	// X.509 and EST routes
-	// --------------------------------------------------------------------------
-	caCertPEMData, err := ioutil.ReadFile(serverCertificateFile)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	caPrivateKeyPEMData, err := ioutil.ReadFile(serverPrivateKeyFile)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	err = server.RegisterX509Handlers(r, caCertPEMData, caPrivateKeyPEMData)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	// Demo Server Routes
+	server.RegisterTestAppRoutes(r, serverCertificateFile, serverPrivateKeyFile)
 
 	httpServer := &http.Server{
 		Handler:      r,
