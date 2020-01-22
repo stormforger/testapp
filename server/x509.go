@@ -93,15 +93,18 @@ func (x *x509Handlers) estEnrollHandler(w http.ResponseWriter, r *http.Request) 
 
 	b, err := ioutil.ReadAll(base64Decoder)
 	if err != nil {
-		http.Error(w, "Could not decode CSR", http.StatusBadRequest)
+		http.Error(w, "Could not decode base64 body", http.StatusBadRequest)
+		return
 	}
 
 	clientCSR, err := x509.ParseCertificateRequest(b)
 	if err != nil {
-		panic(err)
+		http.Error(w, "Could not decode CSR", http.StatusBadRequest)
+		return
 	}
 	if err = clientCSR.CheckSignature(); err != nil {
-		panic(err)
+		http.Error(w, "Invalid signature", http.StatusBadRequest)
+		return
 	}
 
 	clientCRTTemplate := x509.Certificate{
