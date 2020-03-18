@@ -28,6 +28,8 @@ func RegisterTestAppRoutes(r *mux.Router, serverCertificateFile, serverPrivateKe
 
 	r.PathPrefix("/data/").Handler(http.StripPrefix("/data/", http.FileServer(http.Dir("data/static"))))
 
+	r.Path("/cookie/set").HandlerFunc(SetCookieHandler)
+	r.Path("/cookie/get").HandlerFunc(RequiresCookieHandler)
 	RegisterStaticHandler(r)
 }
 

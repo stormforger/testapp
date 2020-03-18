@@ -43,3 +43,37 @@ func RespondWithBytesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(data)
 }
+
+// SetCookieHandler serves a response with a cookie.
+func SetCookieHandler(w http.ResponseWriter, req *http.Request) {
+	cookieName := req.FormValue("cookie")
+	if cookieName == "" {
+		cookieName = "sessionid"
+	}
+
+	value := fmt.Sprintf("%d", randMinMax(1_000_000, 9_000_000))
+
+	http.SetCookie(w, &http.Cookie{
+		Name:  cookieName,
+		Value: value,
+	})
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Cookie served.")
+}
+
+// RequiresCookieHandler serves a forbidden response if no cookie is found. every cookie is accepted.
+func RequiresCookieHandler(w http.ResponseWriter, req *http.Request) {
+	cookieName := req.FormValue("cookie")
+	if cookieName == "" {
+		cookieName = "sessionid"
+	}
+
+	c, err := req.Cookie(cookieName)
+	if err == http.ErrNoCookie {
+		http.Error(w, "cookie required", http.StatusForbidden)
+		return
+	}
+
+	fmt.Fprintf(w, "Hello. Your cookie is %s=%s", c.Name, c.Value)
+}
