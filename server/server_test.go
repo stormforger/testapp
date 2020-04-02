@@ -16,7 +16,7 @@ func TestTestAppHTTPServer(t *testing.T) {
 	require.Nil(t, os.Chdir("..")) // our server package assumes it has access to the `data/` path directly.
 
 	r := mux.NewRouter()
-	server.RegisterTestAppRoutes(r, "", "")
+	server.RegisterStaticHandler(r)
 
 	s := httptest.NewServer(r)
 

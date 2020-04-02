@@ -3,15 +3,11 @@ package server
 import (
 	"net/http"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
-func RegisterTestAppRoutes(r *mux.Router, serverCertificateFile, serverPrivateKeyFile string) {
-	r.Use(DelayMiddleware)
-	r.Use(handlers.CompressHandler)
-
+func RegisterX509Routes(r *mux.Router, serverCertificateFile, serverPrivateKeyFile string) {
 	// X.509 and EST routes
 	// --------------------------------------------------------------------------
 	if serverCertificateFile != "" && serverPrivateKeyFile != "" {
@@ -20,8 +16,11 @@ func RegisterTestAppRoutes(r *mux.Router, serverCertificateFile, serverPrivateKe
 			logrus.Fatal(err)
 		}
 	} else {
-		logrus.Warn("RegisterTestAppRoutes: empty tls certificate")
+		logrus.Warn("RegisterX509Routes: empty tls certificate")
 	}
+}
+
+func RegisterTestAppRoutes(r *mux.Router) {
 
 	s := r.PathPrefix("/demo").Subrouter()
 	RegisterDemo(s)
@@ -30,7 +29,7 @@ func RegisterTestAppRoutes(r *mux.Router, serverCertificateFile, serverPrivateKe
 
 	r.Path("/cookie/set").HandlerFunc(SetCookieHandler)
 	r.Path("/cookie/get").HandlerFunc(RequiresCookieHandler)
-	RegisterStaticHandler(r)
+
 }
 
 func RegisterStaticHandler(r *mux.Router) {
