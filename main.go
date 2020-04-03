@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"github.com/stormforger/testapp/internal/ulimit"
 	"github.com/stormforger/testapp/server"
 )
 
@@ -28,6 +29,10 @@ func main() {
 	tlsConnectionInspection := getEnv("TLS_DEBUG", "0")
 
 	ctx, cancel := context.WithCancel(context.Background())
+
+	if _, _, _, err := ulimit.SetNoFileLimitToMax(); err != nil {
+		logrus.WithError(err).Error("failed to change ulimit")
+	}
 
 	r := mux.NewRouter()
 	// Install our command routes
