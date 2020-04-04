@@ -6,8 +6,6 @@ ENV GO111MODULE=on
 RUN apk update && \
   apk add bash ca-certificates git gcc g++ libc-dev
 
-RUN adduser -D -g '' testapp
-
 COPY go.mod /src/testapp/
 COPY go.sum /src/testapp/
 WORKDIR /src/testapp/
@@ -22,7 +20,9 @@ FROM alpine
 
 COPY --from=builder /etc/passwd /etc/passwd
 
-COPY data/ /data
+RUN adduser -D -g '' testapp
+
+COPY --chown=testapp data/ /data
 
 EXPOSE 9000
 
