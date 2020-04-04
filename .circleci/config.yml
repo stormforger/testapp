@@ -1,24 +1,16 @@
-version: 2
-jobs:
-  deploy:
-    machine: true
-    steps:
-    - checkout
-
-    - run:
-        name: Get architect binary
-        command: |
-          wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
-          chmod +x ./architect
-          ./architect version
-
-    - run: ./architect publish --stable
+version: 2.1
+orbs:
+  architect: giantswarm/architect@0.8.6
 
 workflows:
-  version: 2
   build:
     jobs:
-      - deploy:
+      - architect/push-to-app-catalog:
+          name: push-to-default-app-catalog
+          app_catalog: "default-catalog"
+          app_catalog_test: "default-test-catalog"
+          chart: "loadtest-app"
           filters:
-            branches:
-              only: master
+            # Trigger the job also on git tag.
+            tags:
+              only: /^v.*/
