@@ -39,7 +39,4 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
-            {{- range .Values.env }}
-            - {{ .name }}
-              {{ .value }}
-            {{- end }}
+            {{- toYaml .Values.env | nindent 12 }}
