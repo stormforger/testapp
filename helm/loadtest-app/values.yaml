@@ -32,4 +32,4 @@ resources:
 
 env:
   - name: DISABLE_TLS
-    value: true
+    value: "true"
