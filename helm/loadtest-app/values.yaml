@@ -1,7 +1,6 @@
 managed-by: giantswarm
 
 name: loadtest-app
-namespace: default
 
 replicaCount: 1
 
