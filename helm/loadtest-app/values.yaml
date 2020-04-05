@@ -11,7 +11,7 @@ image:
   pullPolicy: IfNotPresent
 
 service:
-  port: 9000
+  port: 8080
 
 ingress:
   enabled: true
