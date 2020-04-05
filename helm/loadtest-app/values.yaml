@@ -20,7 +20,7 @@ ingress:
   paths:
     - "/"
   hosts:
-    - testapp.ss863.k8s.gauss.eu-central-1.aws.gigantic.io
+    - testapp.ss863.k8s.ginger.eu-west-1.aws.gigantic.io
 
 resources:
   limits:
