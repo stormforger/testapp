@@ -33,3 +33,10 @@ resources:
 env:
   - name: DISABLE_TLS
     value: "true"
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 50
+  targetMemoryUtilizationPercentage: 50
