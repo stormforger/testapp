@@ -22,6 +22,15 @@ func main() {
 		logrus.Warn("SHUTDOWN_CODE not configured!")
 	}
 
+	httpReadTimeout, err := time.ParseDuration(getEnv("HTTP_READ_TIMEOUT", "15s"))
+	if err != nil {
+		logrus.WithError(err).Fatal("HTTP_READ_TIMEOUT parsing failed")
+	}
+	httpWriteTimeout, err := time.ParseDuration(getEnv("HTTP_WRITE_TIMEOUT", "15s"))
+	if err != nil {
+		logrus.WithError(err).Fatal("HTTP_WRITE_TIMEOUT parsing failed")
+	}
+
 	disableTLS := getEnv("DISABLE_TLS", "false") == "true"
 	serverCertificateFile := getEnv("TLS_CERT", "data/pki/server.cert.pem")
 	serverPrivateKeyFile := getEnv("TLS_KEY", "data/pki/server.key.pem")
@@ -60,8 +69,8 @@ func main() {
 	httpServer := &http.Server{
 		Handler:      r,
 		Addr:         ":" + port,
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		WriteTimeout: httpWriteTimeout,
+		ReadTimeout:  httpReadTimeout,
 	}
 
 	logrus.Infof("Starting HTTP server at :%s", port)
@@ -76,8 +85,8 @@ func main() {
 		httpsServer := &http.Server{
 			Handler:      r,
 			Addr:         ":" + portTLS,
-			WriteTimeout: 15 * time.Second,
-			ReadTimeout:  15 * time.Second,
+			WriteTimeout: httpWriteTimeout,
+			ReadTimeout:  httpReadTimeout,
 			TLSConfig: &tls.Config{
 				InsecureSkipVerify: true,
 				ClientAuth:         tls.RequestClientCert,
