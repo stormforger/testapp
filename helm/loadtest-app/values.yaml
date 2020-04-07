@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: stormforger/testapp
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 service:
   port: 8080
