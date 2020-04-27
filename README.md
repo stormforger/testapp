@@ -91,7 +91,7 @@ docker push stormforger/testapp
 
 ### Generate Server RSA Key and Certificate
 
-```terminalß
+```terminal
 go run $(go env GOROOT)/src/crypto/tls/generate_cert.go --host localhost
 mv cert.pem data/pki/server.cert.pem
 mv key.pem data/pki/server.key.pem
