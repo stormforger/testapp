@@ -21,7 +21,6 @@ func RegisterX509Routes(r *mux.Router, serverCertificateFile, serverPrivateKeyFi
 }
 
 func RegisterTestAppRoutes(r *mux.Router) {
-
 	s := r.PathPrefix("/demo").Subrouter()
 	RegisterDemo(s)
 
@@ -29,7 +28,6 @@ func RegisterTestAppRoutes(r *mux.Router) {
 
 	r.Path("/cookie/set").HandlerFunc(SetCookieHandler)
 	r.Path("/cookie/get").HandlerFunc(RequiresCookieHandler)
-
 }
 
 func RegisterStaticHandler(r *mux.Router) {

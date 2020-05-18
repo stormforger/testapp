@@ -16,7 +16,10 @@ func DelayMiddleware(next http.Handler) http.Handler {
 			delay, err := strconv.Atoi(delay)
 			if err == nil {
 				logrus.Debugf("Delaying response by %dms", delay)
-				time.Sleep(time.Duration(delay) * time.Millisecond)
+				select {
+				case <-time.After(time.Duration(delay) * time.Millisecond):
+				case <-r.Context().Done():
+				}
 			}
 		}
 
