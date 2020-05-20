@@ -39,3 +39,7 @@ autoscaling:
   maxReplicas: 20
   targetCPUUtilizationPercentage: 50
   targetMemoryUtilizationPercentage: 50
+
+nodeAffinity:
+  enabled: false
+  selector: {}
