@@ -1,10 +1,13 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
 	"strconv"
+
+	"github.com/stormforger/testapp/internal/randutil"
 )
 
 func DoNotRespondHandler(w http.ResponseWriter, r *http.Request) {
@@ -76,4 +79,16 @@ func RequiresCookieHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	fmt.Fprintf(w, "Hello. Your cookie is %s=%s", c.Name, c.Value)
+}
+
+// RandomTokenJson returns a JSON with a new random "token" value for each request.
+func RandomTokenJson(w http.ResponseWriter, req *http.Request) {
+	data := map[string]string{
+		"token": randutil.StringWithCharset(12, randutil.Lowercase+randutil.Digits),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	e := json.NewEncoder(w)
+	e.SetIndent("", " ")
+	e.Encode(data) // ignore errors for now
 }

@@ -31,6 +31,7 @@ func RegisterTestAppRoutes(r *mux.Router) {
 }
 
 func RegisterStaticHandler(r *mux.Router) {
+	r.HandleFunc("/random/get_token", RandomTokenJson)
 	r.HandleFunc("/respond-with/bytes", RespondWithBytesHandler)
 	r.HandleFunc("/do-not-respond", DoNotRespondHandler)
 
