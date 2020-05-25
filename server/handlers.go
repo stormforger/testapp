@@ -81,8 +81,8 @@ func RequiresCookieHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "Hello. Your cookie is %s=%s", c.Name, c.Value)
 }
 
-// RandomTokenJson returns a JSON with a new random "token" value for each request.
-func RandomTokenJson(w http.ResponseWriter, req *http.Request) {
+// RandomTokenJSON returns a JSON with a new random "token" value for each request.
+func RandomTokenJSON(w http.ResponseWriter, req *http.Request) {
 	data := map[string]string{
 		"token": randutil.StringWithCharset(12, randutil.Lowercase+randutil.Digits),
 	}
