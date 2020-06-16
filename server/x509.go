@@ -132,7 +132,7 @@ func (x *x509Handlers) estEnrollHandler(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/pkcs7-mime; smime-type=certs-only")
 	w.Header().Set("Content-Transfer-Encoding", "base64")
 
-	fmt.Fprintf(w, base64.StdEncoding.EncodeToString(clientCRTRaw))
+	fmt.Fprint(w, base64.StdEncoding.EncodeToString(clientCRTRaw))
 }
 
 func (x *x509Handlers) estCACertsHandler(w http.ResponseWriter, r *http.Request) {
