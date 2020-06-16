@@ -14,23 +14,17 @@ func setupTLSConnectionInspection(server *http.Server) {
 	messagesCh := make(chan string)
 	server.ConnState = buildConnStateHook(messagesCh)
 	go func() {
-		for {
-			select {
-			case msg := <-messagesCh:
-				logrus.Info(msg)
-			}
+		for msg := range messagesCh {
+			logrus.Info(msg)
 		}
 	}()
 
 	infoCh := make(chan tlsClientInfo)
 	server.TLSConfig.GetCertificate = buildGetCertificateHook(infoCh)
 	go func() {
-		for {
-			select {
-			case o := <-infoCh:
-				j, _ := json.Marshal(o)
-				logrus.Info(string(j))
-			}
+		for o := range infoCh {
+			j, _ := json.Marshal(o)
+			logrus.Info(string(j))
 		}
 	}()
 }
@@ -41,8 +35,6 @@ func buildConnStateHook(ch chan string) func(c net.Conn, state http.ConnState) {
 			if cc, ok := c.(*tls.Conn); ok {
 				state := cc.ConnectionState()
 				switch state.Version {
-				case tls.VersionSSL30:
-					ch <- "negotiated to Version: VersionxSSL30"
 				case tls.VersionTLS10:
 					ch <- "negotiated to Version: VersionTLS10"
 				case tls.VersionTLS11:

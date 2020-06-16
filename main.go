@@ -106,19 +106,15 @@ func main() {
 		}()
 
 		go func() {
-			select {
-			case <-ctx.Done():
-				logrus.Info("Shutting down https server on request")
-				httpsServer.Shutdown(context.Background())
-			}
+			<-ctx.Done()
+			logrus.Info("Shutting down https server on request")
+			httpsServer.Shutdown(context.Background())
 		}()
 	}
 
-	select {
-	case <-ctx.Done():
-		logrus.Info("Shutting down http server on request")
-		httpServer.Shutdown(context.Background())
-	}
+	<-ctx.Done()
+	logrus.Info("Shutting down http server on request")
+	httpServer.Shutdown(context.Background())
 }
 
 func getEnv(key, fallback string) string {
