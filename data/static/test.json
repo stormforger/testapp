@@ -3,6 +3,9 @@
     "object": {
       "token": "geheim!%"
     },
+    "empty_list": [],
+    "single_list": [{"id": 1}],
+    "single_int_list": [1],
     "list": [{
         "id": 1,
         "item": "1%",
