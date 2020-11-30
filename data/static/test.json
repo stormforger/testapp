@@ -1,7 +1,8 @@
 {
   "root": {
     "object": {
-      "token": "geheim!%"
+      "token": "geheim!%",
+      "complex key::accessor": "somevalue"
     },
     "empty_list": [],
     "empty_object": {},
