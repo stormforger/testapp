@@ -4,6 +4,7 @@
       "token": "geheim!%",
       "complex key::accessor": "somevalue"
     },
+    "null_field": null,
     "empty_list": [],
     "empty_object": {},
     "single_list": [
