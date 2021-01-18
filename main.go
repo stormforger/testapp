@@ -14,13 +14,22 @@ import (
 	"github.com/stormforger/testapp/server"
 )
 
-func main() {
+type testAppConfig struct {
+	Port                  string
+	PortTLS               string
+	ShutdownCode          string
+	HttpReadTimeout       time.Duration
+	HttpWriteTimeout      time.Duration
+	DisableTLS            bool
+	ServerCertificateFile string
+	ServerPrivateKeyFile  string
+	DebugTLS              bool
+}
+
+func configFromENV() testAppConfig {
 	port := getEnv("PORT", "8080")
 	portTLS := getEnv("TLS_PORT", "8443")
 	shutdownCode := os.Getenv("SHUTDOWN_CODE")
-	if shutdownCode == "" {
-		logrus.Warn("SHUTDOWN_CODE not configured!")
-	}
 
 	httpReadTimeout, err := time.ParseDuration(getEnv("HTTP_READ_TIMEOUT", "15s"))
 	if err != nil {
@@ -35,71 +44,44 @@ func main() {
 	serverCertificateFile := getEnv("TLS_CERT", "data/pki/server.cert.pem")
 	serverPrivateKeyFile := getEnv("TLS_KEY", "data/pki/server.key.pem")
 
-	tlsConnectionInspection := getEnv("TLS_DEBUG", "0")
+	tlsConnectionInspection := getEnv("TLS_DEBUG", "false") == "true"
 
-	ctx, cancel := context.WithCancel(context.Background())
+	return testAppConfig{
+		Port:                  port,
+		PortTLS:               portTLS,
+		ShutdownCode:          shutdownCode,
+		HttpReadTimeout:       httpReadTimeout,
+		HttpWriteTimeout:      httpWriteTimeout,
+		DisableTLS:            disableTLS,
+		ServerCertificateFile: serverCertificateFile,
+		ServerPrivateKeyFile:  serverPrivateKeyFile,
+		DebugTLS:              tlsConnectionInspection,
+	}
+}
+
+func main() {
+	config := configFromENV()
+	if config.ShutdownCode == "" {
+		logrus.Warn("SHUTDOWN_CODE not configured!")
+	}
 
 	if _, _, _, err := ulimit.SetNoFileLimitToMax(); err != nil {
 		logrus.WithError(err).Error("failed to change ulimit")
 	}
 
-	r := mux.NewRouter()
-	// Install our command routes
-	x := r.PathPrefix("/cmd").Subrouter()
-	x.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		if shutdownCode == "" || r.URL.Query().Get("code") != shutdownCode {
-			http.Error(w, "Forbidden - code required", http.StatusForbidden)
-			return
-		}
+	ctx, cancel := context.WithCancel(context.Background()) // create a context for the shutdown handler to kill the servers
+	r := provideServerHandler(config, cancel)
 
-		w.Write([]byte("OK"))
-		cancel() // signal the shutdown workers
-	})
+	if !config.DisableTLS {
+		httpsServer := provideHttpsServer(r, config)
 
-	// Demo Server Routes
-	r.Use(server.DelayMiddleware)
-	r.Use(handlers.CompressHandler)
-	server.RegisterTestAppRoutes(r)
-	if !disableTLS {
-		server.RegisterX509Routes(r, serverCertificateFile, serverPrivateKeyFile)
-	}
-	server.RegisterStaticHandler(r)
-
-	// HTTP Server
-	httpServer := &http.Server{
-		Handler:      r,
-		Addr:         ":" + port,
-		WriteTimeout: httpWriteTimeout,
-		ReadTimeout:  httpReadTimeout,
-	}
-
-	logrus.Infof("Starting HTTP server at :%s", port)
-	go func() {
-		err := httpServer.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			logrus.Fatal(err)
-		}
-	}()
-
-	if !disableTLS {
-		httpsServer := &http.Server{
-			Handler:      r,
-			Addr:         ":" + portTLS,
-			WriteTimeout: httpWriteTimeout,
-			ReadTimeout:  httpReadTimeout,
-			TLSConfig: &tls.Config{
-				InsecureSkipVerify: true,
-				ClientAuth:         tls.RequestClientCert,
-			},
-		}
-
-		if tlsConnectionInspection == "1" {
+		if config.DebugTLS {
 			setupTLSConnectionInspection(httpsServer)
 		}
 
-		logrus.Infof("Starting HTTPS server at :%s", portTLS)
+		logrus.Infof("Starting HTTPS server at %s", httpsServer.Addr)
 		go func() {
-			err := httpsServer.ListenAndServeTLS(serverCertificateFile, serverPrivateKeyFile)
+			err := httpsServer.ListenAndServeTLS(config.ServerCertificateFile, config.ServerPrivateKeyFile)
 			if err != nil && err != http.ErrServerClosed {
 				logrus.Fatal(err)
 			}
@@ -112,6 +94,17 @@ func main() {
 		}()
 	}
 
+	// HTTP Server
+	httpServer := provideHttpServer(r, config)
+
+	logrus.Infof("Starting HTTP server at :%s", httpServer.Addr)
+	go func() {
+		err := httpServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			logrus.Fatal(err)
+		}
+	}()
+
 	<-ctx.Done()
 	logrus.Info("Shutting down http server on request")
 	httpServer.Shutdown(context.Background())
@@ -122,4 +115,51 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func provideServerHandler(config testAppConfig, cancel context.CancelFunc) http.Handler {
+	r := mux.NewRouter()
+	// Install our command routes
+	x := r.PathPrefix("/cmd").Subrouter()
+	x.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
+		if config.ShutdownCode == "" || r.URL.Query().Get("code") != config.ShutdownCode {
+			http.Error(w, "Forbidden - code required", http.StatusForbidden)
+			return
+		}
+
+		w.Write([]byte("OK"))
+		cancel() // signal the shutdown workers
+	})
+
+	// Demo Server Routes
+	r.Use(server.DelayMiddleware)
+	r.Use(handlers.CompressHandler)
+	server.RegisterTestAppRoutes(r)
+	if !config.DisableTLS {
+		server.RegisterX509Routes(r, config.ServerCertificateFile, config.ServerPrivateKeyFile)
+	}
+	server.RegisterStaticHandler(r)
+	return r
+}
+
+func provideHttpServer(handler http.Handler, config testAppConfig) *http.Server {
+	return &http.Server{
+		Handler:      handler,
+		Addr:         ":" + config.Port,
+		WriteTimeout: config.HttpWriteTimeout,
+		ReadTimeout:  config.HttpReadTimeout,
+	}
+}
+
+func provideHttpsServer(handler http.Handler, config testAppConfig) *http.Server {
+	return &http.Server{
+		Handler:      handler,
+		Addr:         ":" + config.PortTLS,
+		WriteTimeout: config.HttpWriteTimeout,
+		ReadTimeout:  config.HttpReadTimeout,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			ClientAuth:         tls.RequestClientCert,
+		},
+	}
 }
