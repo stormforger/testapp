@@ -26,6 +26,9 @@ docker run --rm -p 8080:8080 -p 8443:8443 stormforger/testapp
 
 * [`/`](http://testapp.loadtest.party/): All other requests will be responded to as an echo server (replying with the seen request, including the body if it is below 10kb in size).
 
+  * If a `location` query parameter is provided to the echo endpoint, the response will contain the value of this parameter in the `Location` header
+  * If a `status` query parameter is provided to the echo endpoint, the response will use the value of this parameter for the response status code. If none is provided, the response will always be `200`.
+
 ## Middlewares
 
 * delay: All routes support a generic `delay` query parameter which specifies the number of milliseconds that the request should be artificially hold before processing
