@@ -23,7 +23,7 @@ func EchoHandler(w http.ResponseWriter, r *http.Request) {
 	if answerStatus != "" {
 		code, err := strconv.Atoi(answerStatus)
 		if err != nil {
-			code = 200
+			code = http.StatusOK
 		}
 
 		if code >= 100 && code <= 999 {
@@ -32,7 +32,7 @@ func EchoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Exclude request body if too large
-	if r.ContentLength > 10000 {
+	if r.ContentLength > 10_000 {
 		reqDump, err := httputil.DumpRequest(r, false)
 		if err != nil {
 			fmt.Fprintf(w, "Could not dump request")
