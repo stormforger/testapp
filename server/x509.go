@@ -49,7 +49,6 @@ func RegisterX509ESTHandlers(router *mux.Router, serverCertificateFile, serverPr
 	router.HandleFunc("/.well-known/est/cacerts", x.estCACertsHandler)
 	router.HandleFunc("/.well-known/est/simpleenroll", x.estEnrollHandler).Methods("POST")
 	router.HandleFunc("/.well-known/est/simplereenroll", x.estEnrollHandler).Methods("POST")
-	router.HandleFunc("/x509/inspect", clientCertInspectHandler)
 
 	return nil
 }

@@ -30,10 +30,12 @@ func RegisterTestAppRoutes(r *mux.Router) {
 	r.Path("/cookie/get").HandlerFunc(RequiresCookieHandler)
 }
 
+// RegisterStaticHandler adds mostly deterministic handlers that do not rely on state or local files.
 func RegisterStaticHandler(r *mux.Router) {
 	r.HandleFunc("/random/get_token", RandomTokenJSON)
 	r.HandleFunc("/respond-with/bytes", RespondWithBytesHandler)
 	r.HandleFunc("/do-not-respond", DoNotRespondHandler)
+	r.HandleFunc("/x509/inspect", clientCertInspectHandler)
 
 	// echo handler for everything else
 	r.PathPrefix("/").HandlerFunc(EchoHandler)
