@@ -54,7 +54,7 @@ User-Agent: curl/7.54.0
 
 **NOTE** that the certificate material used by testapp is for testing purposes only!
 
-* `/x509/inspect`: Can be used with a Client TLS certificate. The response will be JSON, containing the subject. All client certificates will be accepted.
+* `/x509/inspect`: Can be used with a Client TLS certificate. The response will be JSON, containing the subject of the client certificate. All client certificates will be accepted.
 
 [EST/RFC7030](https://tools.ietf.org/html/rfc7030) Endpoints:
 
