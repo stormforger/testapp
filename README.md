@@ -21,7 +21,7 @@ docker run --rm -p 8080:8080 -p 8443:8443 stormforger/testapp
   * [`/demo/login`](http://testapp.loadtest.party/demo/login): Has a 5% change to delay the JSON response by 250-350ms
   * [`/demo/search`](http://testapp.loadtest.party/demo/search): Will fail if query parameters are present (HTTP 400 response and different JSON response body)
 * [`/data`](http://testapp.loadtest.party/data): Collection of static responses in different formats (HTML, JSON, XML)
-* [`/respond-with/bytes?size=SIZE`](http://testapp.loadtest.party/respond-with/bytes?sizes=1024): Will respond with `SIZE` random bytes
+* [`/respond-with/bytes?size=SIZE`](http://testapp.loadtest.party/respond-with/bytes?size=1024): Will respond with `SIZE` random bytes
 * [`/do-not-respond`](http://testapp.loadtest.party:9001/do-not-respond): Will read the request and then close the connection without sending any response
 
 * [`/`](http://testapp.loadtest.party/): All other requests will be responded to as an echo server (replying with the seen request, including the body if it is below 10kb in size).
