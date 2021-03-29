@@ -6,15 +6,19 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-
-    - name: Set up Go 1.15
-      uses: actions/setup-go@v2.1.3
-      with:
-        go-version: 1.15
-      id: go
-
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2.3.4
+
+    - name: Read go version
+      id: read_versions
+      run: |
+        echo "::set-output name=go::$(go mod edit -json | jq -r .Go)"
+
+    - name: Set up Go
+      uses: actions/setup-go@v2.1.3
+      with:
+        go-version: "${{ steps.read_versions.outputs.go }}"
+      id: go
 
     - name: Get dependencies
       run: |
