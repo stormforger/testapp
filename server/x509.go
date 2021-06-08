@@ -23,6 +23,7 @@ type tlsInspect struct {
 	ServerName string `json:"server_name,omitempty"`
 	Status     string `json:"status,omitempty"`
 	Subject    string `json:"subject,omitempty"`
+	TLSversion string `json:"tls_version,omitempty"`
 }
 
 type x509Handlers struct {
@@ -62,6 +63,7 @@ func clientCertInspectHandler(w http.ResponseWriter, r *http.Request) {
 
 	tlsInspection := &tlsInspect{
 		ServerName: r.TLS.ServerName,
+		TLSversion: fmt.Sprintf("1.%d", r.TLS.Version&0x0F-1),
 	}
 
 	if len(certs) == 0 {
