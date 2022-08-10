@@ -33,6 +33,7 @@ docker run --rm -p 8080:8080 -p 8443:8443 stormforger/testapp
 
 * delay: All routes support a generic `delay` query parameter which specifies the number of milliseconds that the request should be artificially hold before processing
 * compress: The gorillatoolkit compression handlers supports gzip encoding responses, if the correct http headers are specified
+* read body: By setting `read-body` query parameter to any value, the request body is fully read before continuing with processing
 
 ## Example
 

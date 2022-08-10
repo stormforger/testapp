@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"strconv"
@@ -32,8 +33,16 @@ func ReadRequestBodyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Query().Has("read-body") {
+			var buffer bytes.Buffer
+
 			logrus.Debug("Reading request body")
-			io.Copy(io.Discard, r.Body)
+			_, err := io.Copy(&buffer, r.Body)
+			if err != nil {
+				http.Error(w, "error reading body", 400)
+				return
+			}
+
+			r.Body = io.NopCloser(&buffer)
 		}
 
 		next.ServeHTTP(w, r)
