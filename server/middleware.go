@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,6 +22,18 @@ func DelayMiddleware(next http.Handler) http.Handler {
 				case <-r.Context().Done():
 				}
 			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func ReadRequestBodyMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		if r.URL.Query().Has("read-body") {
+			logrus.Debug("Reading request body")
+			io.Copy(io.Discard, r.Body)
 		}
 
 		next.ServeHTTP(w, r)
