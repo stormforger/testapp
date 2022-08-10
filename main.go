@@ -133,6 +133,7 @@ func provideServerHandler(config testAppConfig, cancel context.CancelFunc) http.
 
 	// Demo Server Routes
 	r.Use(server.DelayMiddleware)
+	r.Use(server.ReadRequestBodyMiddleware)
 	r.Use(handlers.CompressHandler)
 	server.RegisterTestAppRoutes(r)
 	if !config.DisableTLS {
